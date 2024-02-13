@@ -1,0 +1,33 @@
+- name: Download Docker Credential Helper
+  get_url:
+    url: https://github.com/docker/docker-credential-helpers/releases/download/v0.8.1/docker-credential-pass-v0.8.1.linux-amd64
+    dest: /usr/local/bin/docker-credential-pass
+    mode: '0755'
+
+- name: Set execute permission for Docker Credential Helper
+  file:
+    path: /usr/local/bin/docker-credential-pass
+    mode: '0755'
+
+- name: Set up Docker Credential Helper for user ubuntu
+  become: true
+  become_user: ubuntu
+  block:
+    - name: Ensure .docker directory exists for user ubuntu
+      file:
+        path: /home/ubuntu/.docker
+        state: directory
+        mode: '0700'
+        owner: ubuntu
+        group: ubuntu
+
+    - name: Configure Docker to use Credential Helper for user ubuntu
+      copy:
+        dest: /home/ubuntu/.docker/config.json
+        content: |
+          {
+            "credsStore": "pass"
+          }
+        mode: '0600'
+        owner: ubuntu
+        group: ubuntu

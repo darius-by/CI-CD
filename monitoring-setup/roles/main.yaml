@@ -1,0 +1,12 @@
+- name: Deploy grafana and prometheus
+  hosts: monitor
+  become: true
+  roles:
+    - system-update
+    - package-installation
+    - docker-setup
+    - docker-repo-config
+    - docker-installation
+    - docker-system-config
+    - grafana-prometheus
+    - docker-compose

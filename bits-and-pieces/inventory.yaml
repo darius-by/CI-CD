@@ -1,0 +1,212 @@
+# - name: Update Inventory and SSH Command
+#   hosts: localhost
+#   gather_facts: false
+#   tasks:
+#     - name: Get instance information for CI-CD
+#       ec2_instance_info:
+#         region: eu-north-1  
+#         filters:
+#           "tag:Name": "CI-CD"
+#           instance-state-name: running
+#       register: ci_cd_info
+
+#     - name: Get instance information for Docker
+#       ec2_instance_info:
+#         region: eu-north-1  
+#         filters:
+#           "tag:Name": "Docker"
+#           instance-state-name: running
+#       register: docker_info
+
+#     - name: Extract public IPv4 addresses
+#       set_fact:
+#         public_ipv4_ci_cd: "{{ ci_cd_info.instances[0].public_dns_name }}"
+#         public_ipv4_docker: "{{ docker_info.instances[0].public_dns_name }}"
+
+#     - name: Concatenate SSH commands
+#       set_fact:
+#         ssh_command_ci_cd: "ssh -i /home/darius/1_Projects/1_kubernetes/kubernetes/ansible/k8s.pem ubuntu@{{ public_ipv4_ci_cd }}"
+#         ssh_command_docker: "ssh -i /home/darius/1_Projects/1_kubernetes/kubernetes/ansible/k8s.pem ubuntu@{{ public_ipv4_docker }}"
+
+#     - name: Read existing inventory file
+#       slurp:
+#         src: /home/darius/1_Projects/1_kubernetes/kubernetes/ansible/inventory.ini
+#       register: inventory_contents
+#       ignore_errors: true
+
+#     - name: Get SSH fingerprints
+#       block:
+#         - name: Get SSH fingerprint for CI-CD
+#           command: "ssh-keyscan -H {{ public_ipv4_ci_cd }}"
+#           register: ssh_fingerprint_ci_cd
+
+#         - name: Get SSH fingerprint for Docker
+#           command: "ssh-keyscan -H {{ public_ipv4_docker }}"
+#           register: ssh_fingerprint_docker
+#           ignore_errors: true
+
+#     - name: Add SSH fingerprints to known hosts
+#       block:
+#         - name: Add CI-CD fingerprint to known hosts
+#           known_hosts:
+#             name: "{{ public_ipv4_ci_cd }}"
+#             key: "{{ ssh_fingerprint_ci_cd.stdout }}"
+#             path: /home/darius/.ssh/known_hosts
+#             state: present
+
+#         - name: Add Docker fingerprint to known hosts
+#           known_hosts:
+#             name: "{{ public_ipv4_docker }}"
+#             key: "{{ ssh_fingerprint_docker.stdout | default('') }}"
+#             path: /home/darius/.ssh/known_hosts
+#             state: present
+
+#     - name: Update inventory file content
+#       set_fact:
+#         inventory_lines: |
+#           [ci-cd]
+#           CI-CD ansible_host={{ public_ipv4_ci_cd }} ansible_user=ubuntu ansible_ssh_private_key_file=/home/darius/1_Projects/1_kubernetes/kubernetes/ansible/k8s.pem
+          
+#           [docker]
+#           Docker ansible_host={{ public_ipv4_docker }} ansible_user=ubuntu ansible_ssh_private_key_file=/home/darius/1_Projects/1_kubernetes/kubernetes/ansible/k8s.pem
+
+#     - name: Write updated inventory file
+#       copy:
+#         content: "{{ inventory_lines }}"
+#         dest: /home/darius/1_Projects/1_kubernetes/kubernetes/ansible/inventory.ini
+
+#     - name: Print SSH commands and updated inventory
+#       debug:
+#         msg: |
+#           SSH Command CI-CD: {{ ssh_command_ci_cd }}
+#           SSH Command Docker: {{ ssh_command_docker }}
+#       when: ssh_command_ci_cd is defined and ssh_command_docker is defined
+
+#     - name: Print public IPv4 addresses
+#       debug:
+#         var: public_ipv4_ci_cd
+#       when: public_ipv4_ci_cd is defined
+
+#     - name: Print public IPv4 addresses
+#       debug:
+#         var: public_ipv4_docker
+#       when: public_ipv4_docker is defined
+
+
+- name: Update Inventory and SSH Command
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Get instance information for CI-CD
+      ec2_instance_info:
+        region: eu-north-1  
+        filters:
+          "tag:Name": "CI-CD"
+          instance-state-name: running
+      register: ci_cd_info
+
+    - name: Get instance information for Docker
+      ec2_instance_info:
+        region: eu-north-1  
+        filters:
+          "tag:Name": "Docker"
+          instance-state-name: running
+      register: docker_info
+
+    - name: Get instance information for Monitor
+      ec2_instance_info:
+        region: eu-north-1  
+        filters:
+          "tag:Name": "Monitor"
+          instance-state-name: running
+      register: monitor_info
+
+    - name: Extract public IPv4 addresses
+      set_fact:
+        public_ipv4_ci_cd: "{{ ci_cd_info.instances[0].public_dns_name }}"
+        public_ipv4_docker: "{{ docker_info.instances[0].public_dns_name }}"
+        public_ipv4_monitor: "{{ monitor_info.instances[0].public_dns_name }}"
+
+    - name: Concatenate SSH commands
+      set_fact:
+        ssh_command_ci_cd: "ssh -i /home/darius/1_Projects/1_kubernetes/kubernetes/ansible/k8s.pem ubuntu@{{ public_ipv4_ci_cd }}"
+        ssh_command_docker: "ssh -i /home/darius/1_Projects/1_kubernetes/kubernetes/ansible/k8s.pem ubuntu@{{ public_ipv4_docker }}"
+        ssh_command_monitor: "ssh -i /home/darius/1_Projects/1_kubernetes/kubernetes/ansible/k8s.pem ubuntu@{{ public_ipv4_monitor }}"
+
+    - name: Read existing inventory file
+      slurp:
+        src: /home/darius/1_Projects/1_kubernetes/kubernetes/ansible/inventory.ini
+      register: inventory_contents
+      ignore_errors: true
+
+    - name: Get SSH fingerprints
+      block:
+        - name: Get SSH fingerprint for CI-CD
+          command: "ssh-keyscan -H {{ public_ipv4_ci_cd }}"
+          register: ssh_fingerprint_ci_cd
+
+        - name: Get SSH fingerprint for Docker
+          command: "ssh-keyscan -H {{ public_ipv4_docker }}"
+          register: ssh_fingerprint_docker
+          ignore_errors: true
+
+        - name: Get SSH fingerprint for Monitor
+          command: "ssh-keyscan -H {{ public_ipv4_monitor }}"
+          register: ssh_fingerprint_monitor
+          ignore_errors: true
+
+    - name: Add SSH fingerprints to known hosts
+      block:
+        - name: Add CI-CD fingerprint to known hosts
+          known_hosts:
+            name: "{{ public_ipv4_ci_cd }}"
+            key: "{{ ssh_fingerprint_ci_cd.stdout }}"
+            path: /home/darius/.ssh/known_hosts
+            state: present
+
+        - name: Add Docker fingerprint to known hosts
+          known_hosts:
+            name: "{{ public_ipv4_docker }}"
+            key: "{{ ssh_fingerprint_docker.stdout | default('') }}"
+            path: /home/darius/.ssh/known_hosts
+            state: present
+
+        - name: Add Monitor fingerprint to known hosts
+          known_hosts:
+            name: "{{ public_ipv4_monitor }}"
+            key: "{{ ssh_fingerprint_monitor.stdout | default('') }}"
+            path: /home/darius/.ssh/known_hosts
+            state: present
+
+    - name: Update inventory file content
+      set_fact:
+        inventory_lines: |
+          [ci-cd]
+          CI-CD ansible_host={{ public_ipv4_ci_cd }} ansible_user=ubuntu ansible_ssh_private_key_file=/home/darius/1_Projects/1_kubernetes/kubernetes/ansible/k8s.pem
+          
+          [docker]
+          Docker ansible_host={{ public_ipv4_docker }} ansible_user=ubuntu ansible_ssh_private_key_file=/home/darius/1_Projects/1_kubernetes/kubernetes/ansible/k8s.pem
+
+          [monitor]
+          Monitor ansible_host={{ public_ipv4_monitor }} ansible_user=ubuntu ansible_ssh_private_key_file=/home/darius/1_Projects/1_kubernetes/kubernetes/ansible/k8s.pem
+
+    - name: Write updated inventory file
+      copy:
+        content: "{{ inventory_lines }}"
+        dest: /home/darius/1_Projects/1_kubernetes/kubernetes/ansible/inventory.ini
+
+    - name: Print SSH commands and updated inventory
+      debug:
+        msg: |
+          SSH Command CI-CD: {{ ssh_command_ci_cd }}
+          SSH Command Docker: {{ ssh_command_docker }}
+          SSH Command Monitor: {{ ssh_command_monitor }}
+      when: ssh_command_ci_cd is defined and ssh_command_docker is defined and ssh_command_monitor is defined
+
+    - name: Print public IPv4 addresses
+      debug:
+        msg: |
+          Public IPv4 CI-CD: {{ public_ipv4_ci_cd }}
+          Public IPv4 Docker: {{ public_ipv4_docker }}
+          Public IPv4 Monitor: {{ public_ipv4_monitor }}
+      when: public_ipv4_ci_cd is defined and public_ipv4_docker is defined and public_ipv4_monitor is defined

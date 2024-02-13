@@ -1,0 +1,205 @@
+# ---
+# - name: Install Docker on Ubuntu
+#   hosts: ci-cd
+#   become: true
+#   vars:
+#     arch_mapping:  # Map ansible architecture {{ ansible_architecture }} names to Docker's architecture names
+#       x86_64: amd64
+#       aarch64: arm64
+
+#   tasks:
+#     - name: Update and upgrade all packages to the latest version
+#       ansible.builtin.apt:
+#         update_cache: true
+#         upgrade: dist
+#         cache_valid_time: 3600
+
+#     - name: Install required packages
+#       ansible.builtin.apt:
+#         pkg:
+#           - apt-transport-https
+#           - ca-certificates
+#           - curl
+#           - gnupg
+#           - software-properties-common
+
+#     - name: Create directory for Docker's GPG key
+#       ansible.builtin.file:
+#         path: /etc/apt/keyrings
+#         state: directory
+#         mode: '0755'
+
+#     - name: Add Docker's official GPG key
+#       ansible.builtin.apt_key:
+#         url: https://download.docker.com/linux/ubuntu/gpg
+#         keyring: /etc/apt/keyrings/docker.gpg
+#         state: present
+
+#     - name: Print architecture variables
+#       ansible.builtin.debug:
+#         msg: "Architecture: {{ ansible_architecture }}, Codename: {{ ansible_lsb.codename }}"
+
+#     - name: Add Docker repository
+#       ansible.builtin.apt_repository:
+#         repo: >-
+#           deb [arch={{ arch_mapping[ansible_architecture] | default(ansible_architecture) }}
+#           signed-by=/etc/apt/keyrings/docker.gpg]
+#           https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable
+#         filename: docker
+#         state: present
+
+#     - name: Install Docker and related packages
+#       ansible.builtin.apt:
+#         name: "{{ item }}"
+#         state: present
+#         update_cache: true
+#       loop:
+#         - docker-ce
+#         - docker-ce-cli
+#         - containerd.io
+#         - docker-buildx-plugin
+#         - docker-compose-plugin
+
+#     - name: Add Docker group
+#       ansible.builtin.group:
+#         name: docker
+#         state: present
+
+#     - name: Add user to Docker group
+#       ansible.builtin.user:
+#         name: ubuntu
+#         groups: docker
+#         append: true
+
+#     - name: Enable and start Docker services
+#       ansible.builtin.systemd:
+#         name: "{{ item }}"
+#         enabled: true
+#         state: started
+#       loop:
+#         - docker.service
+#         - containerd.service
+
+#     - name: Copy Docker Compose file to EC2 instance
+#       ansible.builtin.copy:
+#         src: /home/darius/1_Projects/CodeAcademy/CodeAcademy/jenkins-sonar-postgre-docker-compose/docker-compose.yaml
+#         dest: /home/ubuntu/docker-compose.yml
+#         owner: ubuntu
+#         group: ubuntu
+#         mode: '0644'
+
+#     - name: Launch Docker Compose
+#       ansible.builtin.shell:
+#         cmd: docker compose -f /home/ubuntu/docker-compose.yml up -d
+#         chdir: /home/ubuntu
+
+
+---
+- name: Install Docker on Ubuntu
+  hosts: ci-cd
+  become: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    arch_mapping:  # Map ansible architecture {{ ansible_architecture }} names to Docker's architecture names
+      x86_64: amd64
+      aarch64: arm64
+
+  tasks:
+    - name: Update and upgrade all packages to the latest version
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: dist
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      ansible.builtin.apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - software-properties-common
+
+    - name: Create directory for Docker's GPG key
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Create directory for Jenkins home folder
+      ansible.builtin.file:
+        path: /home/ubuntu/jenkins_data
+        state: directory
+        mode: '0755'
+        owner: '1000'
+        group: '1000'
+
+    - name: Copy Docker compose file and set permissions
+      ansible.builtin.copy:
+        src: ./jenkins-docker-compose/docker-compose.yaml
+        dest: /home/ubuntu
+        mode: '0755'
+        owner: '1000'
+        group: '1000'
+
+    - name: Add Docker's official GPG key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        keyring: /etc/apt/keyrings/docker.gpg
+        state: present
+
+    - name: Print architecture variables
+      ansible.builtin.debug:
+        msg: "Architecture: {{ ansible_architecture }}, Codename: {{ ansible_lsb.codename }}"
+
+    - name: Add Docker repository
+      ansible.builtin.apt_repository:
+        repo: >-
+          deb [arch={{ arch_mapping[ansible_architecture] | default(ansible_architecture) }}
+          signed-by=/etc/apt/keyrings/docker.gpg]
+          https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable
+        filename: docker
+        state: present
+
+    - name: Install Docker and related packages
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: true
+      loop:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - docker-buildx-plugin
+        - docker-compose-plugin
+
+    - name: Add Docker group
+      ansible.builtin.group:
+        name: docker
+        state: present
+
+    - name: Add user to Docker group
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: true
+
+    - name: Enable and start Docker services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      loop:
+        - docker.service
+        - containerd.service
+
+    - name: Launch Docker Compose
+      ansible.builtin.shell:
+        cmd: docker compose -f /home/ubuntu/docker-compose.yaml up -d
+        chdir: /home/ubuntu
+      register: output
+
+    - name: Show status
+      ansible.builtin.debug:
+        var: output
+

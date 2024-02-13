@@ -1,0 +1,23 @@
+- name: Copy Docker compose file and set permissions
+  ansible.builtin.copy:
+    src: ./files/docker-compose.yaml
+    dest: /home/ubuntu
+    mode: '0755'
+    owner: '1000'
+    group: '1000'
+
+- name: Copy env file and set permissions
+  ansible.builtin.copy:
+    src: ./files/grafana.env
+    dest: /home/ubuntu
+    mode: '0755'
+    owner: '1000'
+    group: '1000'
+
+- name: Copy prometheus file and set permissions
+  ansible.builtin.copy:
+    src: ./files/prometheus.yml
+    dest: /home/ubuntu
+    mode: '0755'
+    owner: '1000'
+    group: '1000'    

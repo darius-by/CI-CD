@@ -1,0 +1,9 @@
+- name: Launch Docker Compose
+  ansible.builtin.shell:
+    cmd: docker compose -f /home/ubuntu/docker-compose.yaml up -d
+    chdir: /home/ubuntu
+  register: output
+
+- name: Show status
+  ansible.builtin.debug:
+    var: output

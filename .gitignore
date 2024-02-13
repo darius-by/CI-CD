@@ -1,0 +1,9 @@
+# Ignore Visual Studio Code folder #
+####################################
+.vscode/
+terraform.tfstate
+terraform.tfstate.backup
+.terraform
+.terraform.lock.hcl
+backup
+grafana.env

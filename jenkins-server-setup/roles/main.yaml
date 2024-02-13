@@ -1,0 +1,11 @@
+- name: Install Docker on Ubuntu
+  hosts: ci-cd
+  become: true
+  roles:
+    - system-update
+    - package-installation
+    - docker-setup
+    - docker-repo-config
+    - docker-installation
+    - docker-system-config
+    - docker-compose

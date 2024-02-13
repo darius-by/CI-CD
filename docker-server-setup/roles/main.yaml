@@ -1,0 +1,11 @@
+- name: Setup Docker, GPG, and Docker Credential Helper on EC2 Instances
+  hosts: docker
+  become: true
+  roles:
+    - docker-repo-config
+    - docker-setup
+    - docker-install
+    - gpg-setup
+    - docker-credential-helper
+    - cadvisor
+    - docker-compose

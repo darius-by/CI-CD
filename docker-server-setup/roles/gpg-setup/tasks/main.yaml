@@ -1,0 +1,62 @@
+---
+- name: Install pass, gnupg2, and rng-tools
+  apt:
+    name:
+      - pass
+      - gnupg2
+      - rng-tools
+    state: present
+
+- name: Generate GPG key batch file
+  become: true
+  become_user: ubuntu
+  copy:
+    dest: /home/ubuntu/gpg_key_batch
+    content: |
+      %echo Generating a basic OpenPGP key
+      Key-Type: default
+      Subkey-Type: default
+      Name-Real: jenkins
+      Name-Comment: with no passphrase
+      Name-Email: your-email@example.com
+      Expire-Date: 0
+      %no-protection
+      %commit
+      %echo done
+    mode: '0600'
+    owner: ubuntu
+    group: ubuntu
+
+- name: Generate GPG key for ubuntu
+  become: true
+  become_user: ubuntu
+  command: gpg --batch --gen-key /home/ubuntu/gpg_key_batch
+  args:
+    creates: /home/ubuntu/.gnupg/pubring.kbx
+  environment:
+    GNUPGHOME: /home/ubuntu/.gnupg
+  register: gpg_key_creation
+  ignore_errors: true
+
+# Debug step to check if gpg was generated
+- name: Debug GPG Key Creation
+  debug:
+    var: gpg_key_creation
+
+- name: Get GPG Key ID
+  become: true
+  become_user: ubuntu
+  shell: >
+    gpg --list-keys --with-colons --fingerprint | 
+    grep '^fpr' | 
+    head -n1 | 
+    awk -F: '{print $10}'
+  args:
+    executable: /bin/bash
+  register: gpg_key_id
+  changed_when: false
+
+# Debug step to check the key 
+- name: Debug GPG Key ID
+  debug:
+    var: gpg_key_id.stdout

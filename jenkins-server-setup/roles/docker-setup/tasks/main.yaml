@@ -1,0 +1,22 @@
+- name: Create directory for Docker's GPG key
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+# This dir is to store jenkins data
+- name: Create directory for Jenkins home folder
+  ansible.builtin.file:
+    path: /home/ubuntu/jenkins_data
+    state: directory
+    mode: '0755'
+    owner: '1000'
+    group: '1000'
+
+- name: Copy Docker compose file and set permissions
+  ansible.builtin.copy:
+    src: ./docker-setup/files/docker-compose.yaml
+    dest: /home/ubuntu
+    mode: '0755'
+    owner: '1000'
+    group: '1000'
