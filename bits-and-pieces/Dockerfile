@@ -11,11 +11,11 @@ RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
 RUN add-apt-repository \
 "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
 
-# Install Docker and Docker Compose
+
 RUN apt-get update -qq \
  && apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose
 
-# Add Jenkins user to the Docker group
+
 RUN usermod -aG docker jenkins
 
 # Add Jenkins user to the 'dockerhost' group if it exists (skip if it already exists)

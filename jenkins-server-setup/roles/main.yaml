@@ -1,4 +1,4 @@
-- name: Install Docker on Ubuntu
+- name: Install Jenkins on Ubuntu
   hosts: ci-cd
   become: true
   roles:

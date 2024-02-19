@@ -1,0 +1,90 @@
+site_name: Code Academy Final Project
+
+nav:
+  - Home: index.md
+  - About: about.md
+  - AWS Infrastructure:
+    - Terraform: main-and-variables.md
+    - Modules:
+      - Instances:
+        - main: infrastructure/instances/instance-main.md
+        - variables: infrastructure/instances/instance-variables.md
+        - outputs: infrastructure/instances/instance-outputs.md
+      - Network:
+        - main: network/network-main.md
+        - variables: network/network-variables.md
+        - outputs: network/network-outputs.md
+      - Security:
+        - main: security/security-main.md
+        - variables: security/security-variables.md
+        - outputs: security/security-outputs.md     
+  - Jenkins CI / CD:
+    - Jenkins Server: jenkins/jenkins.md
+    - Jenkins CI /CD Pipeline: 
+      - Pipeline: jenkins/pipeline.md
+      - App dockerfile build: jenkins/appdockerfile.md
+      - Plugins: jenkins/plugins.md
+    - Jenkins Dockerfile: jenkins/dockerfile.md
+    - Ansible Roles:
+      - System Update: jenkins/systemupdate.md
+      - Package Installation: jenkins/packageinstallation.md 
+      - Docker Setup: jenkins/dockersetup.md
+      - Docker Repo Config: jenkins/dockerrepoconfig.md
+      - Docker Installation: jenkins/dockerinstallation.md
+      - Docker System Config: jenkins/dockersystemconfig.md
+      - Docker Compose: jenkins/dockercompose.md
+  - Docker Server: 
+    - Docker Server: dockernode/docker.md
+    - Ansible Roles:
+      - Docker Repo Config: dockernode/dockerrepoconfig.md
+      - Docker Setup: dockernode/dockersetup.md
+      - Docker Install: dockernode/dockerinstall.md
+      - GPG Setup: dockernode/gpgsetup.md
+      - Docker Credential Helper: dockernode/credhelper.md
+      - CAdvisor: dockernode/cadvisor.md
+      - Docker Compose: dockernode/dockercompose.md
+  - Monitoring Services:
+    - Prometheus & Grafana: promgrafana/promgrafana.md
+    - Ansible Roles:
+      - System Update: promgrafana/systemupdate.md
+      - Package Installation: promgrafana/packageinstallation.md
+      - Docker Setup: promgrafana/dockersetup.md
+      - Docker Repo Config: promgrafana/dockerrepoconfig.md
+      - Docker Installation: promgrafana/dockerinstallation.md
+      - Docker System Config: promgrafana/dockersystemconfig.md
+      - Grafana Prometheus: promgrafana/grafanaprometheus.md
+      - Docker Compose: promgrafana/dockercompose.md
+theme:
+  name: 'material'
+  font:
+    text: Roboto
+  features:
+    - header.autohide
+  palette: 
+    # Palette toggle for light mode
+    - palette: default
+      primary: amber
+      accent: pink
+      toggle:
+        icon: material/brightness-7 
+
+
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: deep purple
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition

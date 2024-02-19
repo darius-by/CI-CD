@@ -7,3 +7,4 @@ terraform.tfstate.backup
 .terraform.lock.hcl
 backup
 grafana.env
+.env
